@@ -1,3 +1,4 @@
+// import { SaveComment } from './../save-comment/models/save-comment.models';
 import {
   MessageBody,
   SubscribeMessage,
@@ -7,6 +8,7 @@ import {
 import { Server } from 'socket.io';
 import { SocketEvent } from 'src/utils/socketEvent';
 import { WebcastPushConnection } from 'tiktok-live-connector';
+// import { SaveCommentService } from '../save-comment/services/save-comment.service';
 
 @WebSocketGateway({
   cors: {
@@ -16,6 +18,7 @@ import { WebcastPushConnection } from 'tiktok-live-connector';
 export class SocketIOGateway {
   @WebSocketServer()
   server: Server;
+  // constructor(private readonly saveCommentService: SaveCommentService) {}
 
   @SubscribeMessage(SocketEvent.GET_LIVE_TOPTOP_COMMENT)
   /**
@@ -35,21 +38,25 @@ export class SocketIOGateway {
     // Emit socket event for update new count on room
     const socketPromise = this.server
       .to(userId) // Send the event to the specific user
-      .emit(SocketEvent.GET_LIVE_TOPTOP_COMMENT, () => {
+      .emit(SocketEvent.GET_LIVE_TOPTOP_COMMENT, async () => {
         // Connect to the TikTok live connection
         const tiktokLiveConnection = new WebcastPushConnection(idUserLive);
-        tiktokLiveConnection
-          .connect()
-          .then((section) => {
-            // Log success message when connected
-            console.info(`Connected to roomId - ${section?.roomId}`);
-          })
-          .catch((err) => {
-            // Log error message if connection fails
-            console.error('Failed to connect', err);
-            tiktokLiveConnection.disconnect();
-          });
-
+        console.log('tiktokLiveConnection', tiktokLiveConnection);
+        try {
+          tiktokLiveConnection
+            .connect()
+            .then((state) => {
+              console.info(`Connected to roomId ${state.roomId}`);
+            })
+            .catch((err) => {
+              console.error('Failed to connect', err);
+            });
+        } catch (err) {
+          // Log error message if connection fails
+          console.error('Failed to connect', err);
+          tiktokLiveConnection.disconnect();
+          throw err;
+        }
         // Listen for chat messages
         tiktokLiveConnection.on(
           'chat',
@@ -74,6 +81,13 @@ export class SocketIOGateway {
               profilePictureUrl,
               createTime,
             };
+            // this.saveCommentService.create({
+            //   comment,
+            //   user_id: userId,
+            //   post_id: uniqueId,
+            //   nickname,
+            //   createdTime: createTime,
+            // });
 
             this.server
               .to(userId) // Send the event to the specific user

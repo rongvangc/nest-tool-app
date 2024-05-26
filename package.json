@@ -23,18 +23,20 @@
     "@nestjs/common": "^10.0.0",
     "@nestjs/config": "^3.2.2",
     "@nestjs/core": "^10.0.0",
+    "@nestjs/mapped-types": "*",
     "@nestjs/mongoose": "^10.0.6",
     "@nestjs/passport": "^10.0.3",
     "@nestjs/platform-express": "^10.3.8",
     "bcrypt": "^5.1.1",
     "express-session": "^1.18.0",
     "mongoose": "^8.4.0",
+    "nest": "^0.1.6",
     "passport": "^0.7.0",
     "passport-jwt": "^4.0.1",
     "passport-local": "^1.0.0",
     "reflect-metadata": "^0.2.0",
     "rxjs": "^7.8.1",
-    "tiktok-live-connector": "^1.1.6"
+    "tiktok-live-connector": "^1.1.7"
   },
   "devDependencies": {
     "@nestjs/cli": "^10.0.0",
