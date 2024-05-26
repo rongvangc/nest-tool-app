@@ -1,4 +1,3 @@
-// import { SaveComment } from './../save-comment/models/save-comment.models';
 import {
   MessageBody,
   SubscribeMessage,
@@ -8,7 +7,6 @@ import {
 import { Server } from 'socket.io';
 import { SocketEvent } from 'src/utils/socketEvent';
 import { WebcastPushConnection } from 'tiktok-live-connector';
-// import { SaveCommentService } from '../save-comment/services/save-comment.service';
 
 @WebSocketGateway({
   cors: {
@@ -18,7 +16,6 @@ import { WebcastPushConnection } from 'tiktok-live-connector';
 export class SocketIOGateway {
   @WebSocketServer()
   server: Server;
-  // constructor(private readonly saveCommentService: SaveCommentService) {}
 
   @SubscribeMessage(SocketEvent.GET_LIVE_TOPTOP_COMMENT)
   /**
@@ -41,7 +38,7 @@ export class SocketIOGateway {
       .emit(SocketEvent.GET_LIVE_TOPTOP_COMMENT, async () => {
         // Connect to the TikTok live connection
         const tiktokLiveConnection = new WebcastPushConnection(idUserLive);
-        console.log('tiktokLiveConnection', tiktokLiveConnection);
+
         try {
           tiktokLiveConnection
             .connect()
