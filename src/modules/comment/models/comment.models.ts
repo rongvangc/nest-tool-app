@@ -1,10 +1,10 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { HydratedDocument } from 'mongoose';
 
-export type SaveCommentDocument = HydratedDocument<SaveComment>;
+export type CommentDocument = HydratedDocument<Comment>;
 
 @Schema()
-export class SaveComment {
+export class Comment {
   @Prop({ required: true })
   comment: string;
   @Prop({ required: true })
@@ -17,5 +17,4 @@ export class SaveComment {
   // createdTime: string;
 }
 
-export const SaveCommentDocumentSchema =
-  SchemaFactory.createForClass(SaveComment);
+export const CommentDocumentSchema = SchemaFactory.createForClass(Comment);

@@ -1,13 +1,13 @@
 import { Module } from '@nestjs/common';
-import { SaveCommentService } from './services/save-comment.service';
-import { SaveCommentController } from './controllers/save-comment.controller';
+import { SaveCommentService } from './services/comment.service';
+import { SaveCommentController } from './controllers/comment.controller';
 import { ConfigModule } from '@nestjs/config';
 import { SocketIOModule } from '../events/socket-io.module';
 import { MongooseModule } from '@nestjs/mongoose';
 import {
   SaveComment,
   SaveCommentDocumentSchema,
-} from './models/save-comment.models';
+} from './models/comment.models';
 
 @Module({
   imports: [

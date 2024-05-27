@@ -78,7 +78,7 @@ export class SocketIOGateway {
               profilePictureUrl,
               createTime,
             };
-            // this.saveCommentService.create({
+            // this.commentService.create({
             //   comment,
             //   user_id: userId,
             //   post_id: uniqueId,

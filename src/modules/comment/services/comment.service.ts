@@ -1,33 +1,30 @@
 import { Injectable } from '@nestjs/common';
-import { CreateSaveCommentDto } from '../dtos/create-save-comment.dto';
+import { CommentDto } from '../dtos/comment.dto';
 import { ApiResponse } from 'src/common/types';
-import { GetCommentResponse } from '../interface/save-comment.interface';
+import { GetCommentResponse } from '../interface/comment.interface';
 import { Model } from 'mongoose';
-import {
-  SaveComment,
-  SaveCommentDocument,
-} from '../models/save-comment.models';
+import { Comment, CommentDocument } from '../models/comment.models';
 import { InjectModel } from '@nestjs/mongoose';
 // import { InjectModel } from '@nestjs/mongoose';
 
 @Injectable()
-export class SaveCommentService {
+export class CommentService {
   constructor(
-    @InjectModel(SaveComment.name)
-    private commentModel: Model<SaveCommentDocument>,
+    @InjectModel(Comment.name)
+    private commentModel: Model<CommentDocument>,
   ) {}
 
   async create({
     comment,
-    user_id,
+    // user_id,
     post_id,
     nickname,
-  }: CreateSaveCommentDto): Promise<ApiResponse<GetCommentResponse>> {
-    // const { comment, user_id, post_id, nickname } = createSaveCommentDto;
+  }: CommentDto): Promise<ApiResponse<GetCommentResponse>> {
+    // const { comment, user_id, post_id, nickname } = CommentDto;
 
     const createdComment = new this.commentModel({
       comment,
-      user_id,
+      // user_id,
       post_id,
       nickname,
     });
@@ -41,12 +38,11 @@ export class SaveCommentService {
     };
   }
 
+  findOne(idUserLive: string) {
+    return `This action returns a #${idUserLive} saveComment`;
+  }
   // findAll() {
   //   return `This action returns all saveComment`;
-  // }
-
-  // findOne(id: number) {
-  //   return `This action returns a #${id} saveComment`;
   // }
 
   // remove(id: number) {
