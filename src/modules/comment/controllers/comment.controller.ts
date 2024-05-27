@@ -4,7 +4,7 @@ import { GetCommentResponse } from '../interface/comment.interface';
 import { ApiResponse } from 'src/common/types';
 import { CommentService } from '../services/comment.service';
 
-@Controller('-comment')
+@Controller('comment')
 export class CommentController {
   constructor(private readonly commentService: CommentService) {}
 

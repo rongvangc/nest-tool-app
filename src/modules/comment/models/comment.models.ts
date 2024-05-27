@@ -7,8 +7,8 @@ export type CommentDocument = HydratedDocument<Comment>;
 export class Comment {
   @Prop({ required: true })
   comment: string;
-  @Prop({ required: true })
-  user_id: string;
+  // @Prop({ required: true })
+  // user_id: string;
   @Prop({ required: true })
   post_id: string;
   @Prop({ required: true })

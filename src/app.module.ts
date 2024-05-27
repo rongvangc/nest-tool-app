@@ -11,7 +11,7 @@ import { jwtConstants } from './modules/auth/constants/jwtConstants';
 import { UserModule } from './modules/users/user.module';
 import { SocketIOModule } from './modules/events/socket-io.module';
 import { ToptopModule } from './modules/toptop/toptop.module';
-import { SaveCommentModule } from './modules/comment/save-comment.module';
+import { CommentModule } from './modules/comment/comment.module';
 
 @Module({
   imports: [
@@ -36,7 +36,7 @@ import { SaveCommentModule } from './modules/comment/save-comment.module';
     UserModule,
     SocketIOModule,
     ToptopModule,
-    SaveCommentModule,
+    CommentModule,
   ],
   controllers: [AppController],
   providers: [AppService],
