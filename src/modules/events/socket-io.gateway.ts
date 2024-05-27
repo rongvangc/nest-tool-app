@@ -35,21 +35,25 @@ export class SocketIOGateway {
     // Emit socket event for update new count on room
     const socketPromise = this.server
       .to(userId) // Send the event to the specific user
-      .emit(SocketEvent.GET_LIVE_TOPTOP_COMMENT, () => {
+      .emit(SocketEvent.GET_LIVE_TOPTOP_COMMENT, async () => {
         // Connect to the TikTok live connection
         const tiktokLiveConnection = new WebcastPushConnection(idUserLive);
-        tiktokLiveConnection
-          .connect()
-          .then((section) => {
-            // Log success message when connected
-            console.info(`Connected to roomId - ${section?.roomId}`);
-          })
-          .catch((err) => {
-            // Log error message if connection fails
-            console.error('Failed to connect', err);
-            tiktokLiveConnection.disconnect();
-          });
 
+        try {
+          tiktokLiveConnection
+            .connect()
+            .then((state) => {
+              console.info(`Connected to roomId ${state.roomId}`);
+            })
+            .catch((err) => {
+              console.error('Failed to connect', err);
+            });
+        } catch (err) {
+          // Log error message if connection fails
+          console.error('Failed to connect', err);
+          tiktokLiveConnection.disconnect();
+          throw err;
+        }
         // Listen for chat messages
         tiktokLiveConnection.on(
           'chat',
@@ -74,6 +78,13 @@ export class SocketIOGateway {
               profilePictureUrl,
               createTime,
             };
+            // this.commentService.create({
+            //   comment,
+            //   user_id: userId,
+            //   post_id: uniqueId,
+            //   nickname,
+            //   createdTime: createTime,
+            // });
 
             this.server
               .to(userId) // Send the event to the specific user
