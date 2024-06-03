@@ -1,11 +1,16 @@
 import { IsString } from 'class-validator';
-export class CommentDto {
+
+export class CommentBillDto {
+  @IsString()
+  session: string;
   @IsString()
   comment: string;
-  // @IsString()
-  // user_id: string;
+  @IsString()
+  user_id: string;
   @IsString()
   post_id: string;
   @IsString()
-  nickname;
+  nickname: string;
+  @IsString()
+  createdTime: string;
 }

@@ -1,4 +1,3 @@
-import { PaginatedResourceResponse } from './../../../../node_modules/@clerk/backend/dist/api/resources/Deserializer.d';
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
@@ -26,8 +25,8 @@ export class UserService {
     };
   }
 
-  async getAllUser(): Promise<PaginatedResourceResponse<ClerkUser[]>> {
-    const userList = await clerkClient.users.getUserList();
+  async getCurrentUser(id: string): Promise<ClerkUser> {
+    const userList = await clerkClient.users.getUser(id);
     return userList;
   }
 }

@@ -4,14 +4,14 @@ import { CommentController } from './controllers/comment.controller';
 import { ConfigModule } from '@nestjs/config';
 import { SocketIOModule } from '../events/socket-io.module';
 import { MongooseModule } from '@nestjs/mongoose';
-import { Comment, CommentDocumentSchema } from './models/comment.models';
+import { CommenBillSchema, CommentBill } from './models/commentBill.model';
 
 @Module({
   imports: [
     ConfigModule,
     SocketIOModule,
     MongooseModule.forFeature([
-      { name: Comment.name, schema: CommentDocumentSchema },
+      { name: CommentBill.name, schema: CommenBillSchema },
     ]),
   ],
   controllers: [CommentController],

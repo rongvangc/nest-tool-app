@@ -1,10 +1,9 @@
-import { PaginatedResourceResponse } from './../../../../node_modules/@clerk/backend/dist/api/resources/Deserializer.d';
-import { Controller, Get } from '@nestjs/common';
+import { Controller, Get, Param } from '@nestjs/common';
 import { ApiResponse } from 'src/common/types';
 import { UserToken, UserTokenType } from 'src/decorators/user.decorator';
 import { GetUserResponse } from '../interfaces/user.interface';
 import { UserService } from '../services/user.service';
-import { User } from '@clerk/clerk-sdk-node';
+import { User as ClerkUser } from '@clerk/clerk-sdk-node';
 
 @Controller('user')
 export class UserController {
@@ -17,8 +16,9 @@ export class UserController {
     return this.userService.getUser(user?._id);
   }
 
-  @Get()
-  async getAllUser(): Promise<PaginatedResourceResponse<User[]>> {
-    return this.userService.getAllUser();
+  // This is for Admin
+  @Get(':id')
+  async getAllUser(@Param('id') id: string): Promise<ClerkUser> {
+    return this.userService.getCurrentUser(id);
   }
 }

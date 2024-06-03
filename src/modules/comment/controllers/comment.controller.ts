@@ -1,6 +1,6 @@
-import { Controller, Post, Body } from '@nestjs/common';
-import { CommentDto } from '../dtos/comment.dto';
-import { GetCommentResponse } from '../interface/comment.interface';
+import { Controller, Post, Body, Get, Param } from '@nestjs/common';
+import { CommentBillDto } from '../dtos/comment.dto';
+import { CommentResponse } from '../interface/comment.interface';
 import { ApiResponse } from 'src/common/types';
 import { CommentService } from '../services/comment.service';
 
@@ -8,25 +8,15 @@ import { CommentService } from '../services/comment.service';
 export class CommentController {
   constructor(private readonly commentService: CommentService) {}
 
-  @Post('save')
-  create(
-    @Body() commentData: CommentDto,
-  ): Promise<ApiResponse<GetCommentResponse>> {
-    return this.commentService.create(commentData);
+  @Post('saveBill')
+  saveBill(
+    @Body() commentBillData: CommentBillDto,
+  ): Promise<ApiResponse<CommentResponse>> {
+    return this.commentService.saveBill(commentBillData);
   }
 
-  // @Get()
-  // findAll() {
-  //   return this.CommentService.findAll();
-  // }
-
-  // @Get(':id')
-  // findOne(@Param('id') idUserLive: string) {
-  //   return this.CommentService.findOne(idUserLive);
-  // }
-
-  // @Delete(':id')
-  // remove(@Param('id') id: string) {
-  //   return this.saveCommentService.remove(+id);
-  // }
+  @Get(':session')
+  findAllOrderInSession(@Param('session') session: string) {
+    return this.commentService.findAll(session);
+  }
 }
