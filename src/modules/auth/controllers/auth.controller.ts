@@ -1,4 +1,5 @@
 import { Body, Controller, Post } from '@nestjs/common';
+import { ApiResponse } from 'src/common/types';
 import { Public } from '../../../decorators/public.decorator';
 import { AuthCreateDto, AuthLoginDto } from '../dtos/auth.dtos';
 import {
@@ -6,7 +7,6 @@ import {
   SigninResponse,
 } from '../interfaces/auth.interface';
 import { AuthService } from '../services/auth.service';
-import { ApiResponse } from 'src/common/types';
 
 @Public()
 @Controller('auth')

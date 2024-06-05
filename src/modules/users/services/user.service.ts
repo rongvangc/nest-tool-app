@@ -4,7 +4,7 @@ import { Model } from 'mongoose';
 import { ApiResponse } from 'src/common/types';
 import { GetUserResponse } from '../interfaces/user.interface';
 import { User, UserModelDocument } from '../models/user.model';
-import { clerkClient } from '@clerk/clerk-sdk-node';
+import { SignInToken, clerkClient } from '@clerk/clerk-sdk-node';
 import { User as ClerkUser } from '@clerk/clerk-sdk-node';
 @Injectable()
 export class UserService {
@@ -13,7 +13,6 @@ export class UserService {
   ) {}
 
   async getUser(id: string): Promise<ApiResponse<GetUserResponse>> {
-    console.log('id', id);
     const user = await this.userModel.findById(id);
     return {
       data: {
@@ -27,6 +26,18 @@ export class UserService {
 
   async getCurrentUser(id: string): Promise<ClerkUser> {
     const userList = await clerkClient.users.getUser(id);
+
     return userList;
+  }
+
+  async getClerkToken({ userId }): Promise<ApiResponse<SignInToken>> {
+    const token = await clerkClient.signInTokens.createSignInToken({
+      userId,
+      expiresInSeconds: 60 * 60 * 24 * 30,
+    });
+
+    return {
+      data: token,
+    };
   }
 }

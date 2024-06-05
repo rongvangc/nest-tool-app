@@ -12,9 +12,6 @@ export class ToptopController {
     @Body() toptopData: ToptopDto,
     @UserToken() user: UserTokenType,
   ): Promise<void> {
-    return this.toptopService.getLiveComments(
-      user?._id,
-      toptopData?.idLiveUser,
-    );
+    return this.toptopService.getLiveComments(user?.id, toptopData?.idLiveUser);
   }
 }

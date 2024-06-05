@@ -1,19 +1,14 @@
+import { clerkClient, User } from '@clerk/clerk-sdk-node';
 import {
   createParamDecorator,
   ExecutionContext,
   UnauthorizedException,
 } from '@nestjs/common';
-import { JwtService } from '@nestjs/jwt';
-import { jwtConstants } from 'src/modules/auth/constants/jwtConstants';
 
-export type UserTokenType = {
-  _id: string;
-  email: string;
-  displayName: string;
-};
+export type UserTokenType = User;
 
 export const UserToken = createParamDecorator(
-  (data: unknown, context: ExecutionContext) => {
+  async (data: unknown, context: ExecutionContext) => {
     const request = context.switchToHttp().getRequest();
     const token = extractTokenFromRequest(request);
 
@@ -21,14 +16,14 @@ export const UserToken = createParamDecorator(
       throw new UnauthorizedException('Missing token');
     }
 
-    try {
-      const decodedToken = jwtService.verify(token, {
-        secret: jwtConstants.secret,
-      });
+    const user = request['user'];
 
-      return decodedToken;
+    try {
+      const userInfo = await clerkClient.users.getUser(user?.sub);
+
+      return userInfo;
     } catch (error) {
-      throw new UnauthorizedException('Invalid token');
+      throw new UnauthorizedException(error ?? 'Invalid token');
     }
   },
 );
@@ -40,5 +35,3 @@ function extractTokenFromRequest(request: any): string | null {
   }
   return null;
 }
-
-const jwtService = new JwtService(/* jwtService options here */);
