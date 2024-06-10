@@ -1,4 +1,4 @@
-export type GeneralStatus = {
-  Success: true;
-  Fail: false;
-};
+export enum GeneralStatus {
+  Success = 'success',
+  Fail = 'fail',
+}

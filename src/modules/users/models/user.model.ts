@@ -6,19 +6,10 @@ export type UserModelDocument = HydratedDocument<User>;
 @Schema()
 export class User {
   @Prop({ unique: true, required: true, trim: true })
-  email: string;
+  clerkUserId: string;
 
-  @Prop({ unique: true, trim: true })
-  phone: string;
-
-  @Prop({ required: true, trim: true })
-  displayName: string;
-
-  @Prop({ required: true, trim: true })
-  photoURL: string;
-
-  @Prop({ required: true, trim: true })
-  hash: string;
+  @Prop({ trim: true })
+  tiktokLiveID: string;
 
   @Prop({ default: Date.now })
   timestamp: Date;

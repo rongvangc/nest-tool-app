@@ -1,33 +1,46 @@
+import { SignInToken, clerkClient } from '@clerk/clerk-sdk-node';
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
-import { ApiResponse } from 'src/common/types';
-import { GetUserResponse } from '../interfaces/user.interface';
+import { ApiResponse, GeneralStatus } from 'src/common/types';
 import { User, UserModelDocument } from '../models/user.model';
-import { SignInToken, clerkClient } from '@clerk/clerk-sdk-node';
-import { User as ClerkUser } from '@clerk/clerk-sdk-node';
+import {
+  GetUserResponse,
+  UpdateTiktokIDResponse,
+} from '../interfaces/user.interface';
 @Injectable()
 export class UserService {
   constructor(
     @InjectModel(User.name) private userModel: Model<UserModelDocument>,
   ) {}
 
-  async getUser(id: string): Promise<ApiResponse<GetUserResponse>> {
-    const user = await this.userModel.findById(id);
-    return {
-      data: {
-        _id: user?._id,
-        email: user?.email,
-        displayName: user?.displayName,
-        photoURL: user?.photoURL,
-      },
-    };
-  }
-
-  async getCurrentUser(id: string): Promise<ClerkUser> {
+  async getCurrentUser(id: string): Promise<ApiResponse<GetUserResponse>> {
     const userList = await clerkClient.users.getUser(id);
 
-    return userList;
+    const existingUser = await this.userModel
+      .findOne({ clerkUserId: id })
+      .exec();
+
+    if (!existingUser) {
+      const createUser = new this.userModel({
+        clerkUserId: id,
+        tiktokLiveID: '',
+      });
+
+      await createUser.save();
+    }
+
+    return {
+      data: {
+        ...userList,
+        clerkUserId: id,
+        tiktokLiveID: existingUser?.tiktokLiveID ?? '',
+        primaryEmailAddress: userList.primaryEmailAddress,
+        primaryPhoneNumber: userList.primaryPhoneNumber,
+        primaryWeb3Wallet: userList.primaryWeb3Wallet,
+        fullName: userList.fullName,
+      },
+    };
   }
 
   async getClerkToken({ userId }): Promise<ApiResponse<SignInToken>> {
@@ -38,6 +51,36 @@ export class UserService {
 
     return {
       data: token,
+    };
+  }
+
+  async updateTiktokLiveID({
+    id,
+    tiktokLiveID,
+  }: {
+    id: string;
+    tiktokLiveID: string;
+  }): Promise<ApiResponse<UpdateTiktokIDResponse>> {
+    const existingUser = await this.userModel.findOneAndUpdate(
+      { clerkUserId: id },
+      {
+        tiktokLiveID,
+      },
+      { runOnce: true, new: true },
+    );
+
+    if (!existingUser) {
+      return {
+        data: {
+          status: GeneralStatus.Success,
+        },
+      };
+    }
+
+    return {
+      data: {
+        status: GeneralStatus.Success,
+      },
     };
   }
 }

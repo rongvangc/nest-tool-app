@@ -1,8 +1,11 @@
-import { Types } from 'mongoose';
+import { User as ClerkUser } from '@clerk/clerk-sdk-node';
+import { GeneralStatus } from 'src/common/types';
 
-export type GetUserResponse = {
-  _id: Types.ObjectId;
-  displayName: string;
-  photoURL: string;
-  email: string;
+export type GetUserResponse = ClerkUser & {
+  tiktokLiveID: string;
+  clerkUserId: string;
+};
+
+export type UpdateTiktokIDResponse = {
+  status: GeneralStatus;
 };
