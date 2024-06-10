@@ -15,8 +15,8 @@ export class CommentController {
     return this.commentService.saveBill(commentBillData);
   }
 
-  @Get(':session')
-  findAllOrderInSession(@Param('session') session: string) {
-    return this.commentService.findAll(session);
+  @Get(':sessionId')
+  findAllOrderInSession(@Param('sessionId') sessionId: string) {
+    return this.commentService.findOrderInOneSession(sessionId);
   }
 }

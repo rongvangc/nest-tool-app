@@ -56,8 +56,8 @@ export class CommentService {
     }
   }
 
-  async findAll(session: string) {
-    const bill = await this.commentBillModel.find({ session }).exec();
+  async findOrderInOneSession(sessionId: string) {
+    const bill = await this.commentBillModel.find({ sessionId }).exec();
 
     if (bill.length === 0) {
       throw new HttpException(
