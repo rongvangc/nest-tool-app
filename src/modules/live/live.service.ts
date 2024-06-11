@@ -22,7 +22,7 @@ export class LiveService {
     return {
       data: {
         status: GeneralStatus.Success,
-        id: id,
+        sessionId: id,
       },
     };
   }
