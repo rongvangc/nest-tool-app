@@ -3,7 +3,6 @@ import { UUID } from 'crypto';
 import { HydratedDocument, Types } from 'mongoose';
 
 export type LiveSessionModelDocument = HydratedDocument<LiveSession>;
-
 export type BillDocument = HydratedDocument<Bill>;
 
 @Schema()
@@ -39,3 +38,4 @@ export class LiveSession {
 }
 
 export const LiveSessionSchema = SchemaFactory.createForClass(LiveSession);
+export const BillSchema = SchemaFactory.createForClass(Bill);

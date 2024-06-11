@@ -14,7 +14,7 @@ export class LiveService {
   async saveLiveSession(idUserLive: string, startTime: Date): Promise<any> {
     const id = uuidv4();
     const liveSession = new this.liveSessionModel({
-      id: id,
+      sessionId: id,
       idUserLive,
       startTime,
     });
@@ -29,7 +29,7 @@ export class LiveService {
 
   async addBillToSession(sessionId: UUID, bill: any): Promise<any> {
     await this.liveSessionModel.updateOne(
-      { id: sessionId },
+      { sessionId: sessionId },
       { $push: { bills: bill } },
     );
 
