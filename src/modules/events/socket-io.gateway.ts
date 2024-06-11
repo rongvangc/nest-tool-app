@@ -1,3 +1,4 @@
+import { LiveService } from './../live/live.service';
 import {
   MessageBody,
   SubscribeMessage,
@@ -7,6 +8,7 @@ import {
 import { Server } from 'socket.io';
 import { SocketEvent } from 'src/utils/socketEvent';
 import { WebcastPushConnection } from 'tiktok-live-connector';
+import { Inject, forwardRef } from '@nestjs/common';
 
 @WebSocketGateway({
   cors: {
@@ -14,6 +16,12 @@ import { WebcastPushConnection } from 'tiktok-live-connector';
   },
 })
 export class SocketIOGateway {
+  constructor(
+    @Inject(forwardRef(() => LiveService))
+    private liveService: LiveService,
+  ) {}
+  private tiktokLiveConnections: WebcastPushConnection;
+
   @WebSocketServer()
   server: Server;
 
@@ -37,10 +45,10 @@ export class SocketIOGateway {
       .to(userId) // Send the event to the specific user
       .emit(SocketEvent.GET_LIVE_TOPTOP_COMMENT, async () => {
         // Connect to the TikTok live connection
-        const tiktokLiveConnection = new WebcastPushConnection(idUserLive);
+        this.tiktokLiveConnections = new WebcastPushConnection(idUserLive);
 
         try {
-          tiktokLiveConnection
+          this.tiktokLiveConnections
             .connect()
             .then((state) => {
               console.info(`Connected to roomId ${state.roomId}`);
@@ -51,11 +59,16 @@ export class SocketIOGateway {
         } catch (err) {
           // Log error message if connection fails
           console.error('Failed to connect', err);
-          tiktokLiveConnection.disconnect();
+          this.tiktokLiveConnections.disconnect();
           throw err;
         }
+        const res = await this.liveService.saveLiveSession(
+          idUserLive,
+          new Date(Date.now()),
+        );
+        console.log(res);
         // Listen for chat messages
-        tiktokLiveConnection.on(
+        this.tiktokLiveConnections.on(
           'chat',
           ({
             comment,
@@ -78,13 +91,6 @@ export class SocketIOGateway {
               profilePictureUrl,
               createTime,
             };
-            // this.commentService.create({
-            //   comment,
-            //   user_id: userId,
-            //   post_id: uniqueId,
-            //   nickname,
-            //   createdTime: createTime,
-            // });
 
             this.server
               .to(userId) // Send the event to the specific user
@@ -95,5 +101,14 @@ export class SocketIOGateway {
 
     // Wait for the socket event and connection to be established
     await Promise.all([socketPromise]);
+  }
+
+  async disconnectGetLiveTiktok({ userId, idUserLive }) {
+    const tiktokLiveConnection = this.tiktokLiveConnections[idUserLive];
+    if (tiktokLiveConnection) {
+      tiktokLiveConnection.disconnect();
+      this.server.disconnectSockets(userId);
+    }
+    return;
   }
 }

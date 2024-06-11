@@ -14,4 +14,15 @@ export class ToptopController {
   ): Promise<void> {
     return this.toptopService.getLiveComments(user?.id, toptopData?.idLiveUser);
   }
+
+  @Get()
+  async stopLiveComments(
+    @Body() toptopData: ToptopDto,
+    @UserToken() user: UserTokenType,
+  ): Promise<void> {
+    return this.toptopService.stopLiveComments(
+      user?.id,
+      toptopData?.idLiveUser,
+    );
+  }
 }

@@ -17,4 +17,11 @@ export class ToptopService {
       idUserLive,
     });
   }
+
+  async stopLiveComments(id: string, idUserLive: string): Promise<void> {
+    return this.socketIOGateway.disconnectGetLiveTiktok({
+      userId: id,
+      idUserLive,
+    });
+  }
 }
