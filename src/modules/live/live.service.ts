@@ -27,6 +27,31 @@ export class LiveService {
     };
   }
 
+  async stopLiveSession(
+    idUserLive: string,
+    sessionId: UUID,
+    stopTime: Date,
+  ): Promise<any> {
+    const currentLiveSession = await this.liveSessionModel.findOne({
+      idUserLive,
+      sessionId,
+    });
+    console.log(currentLiveSession);
+    if (currentLiveSession) {
+      await this.liveSessionModel.updateOne(
+        { sessionId },
+        { $set: { stopTime: stopTime } },
+      );
+      return;
+    } else {
+      return {
+        data: {
+          status: GeneralStatus.Fail,
+        },
+      };
+    }
+  }
+
   async addBillToSession(sessionId: UUID, bill: any): Promise<any> {
     await this.liveSessionModel.updateOne(
       { sessionId: sessionId },

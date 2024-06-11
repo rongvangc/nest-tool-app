@@ -103,12 +103,24 @@ export class SocketIOGateway {
     await Promise.all([socketPromise]);
   }
 
-  async disconnectGetLiveTiktok({ userId, idUserLive }) {
-    const tiktokLiveConnection = this.tiktokLiveConnections[idUserLive];
-    if (tiktokLiveConnection) {
-      tiktokLiveConnection.disconnect();
+  async disconnectGetLiveTiktok({ userId, idUserLive, sessionId }) {
+    if (this.tiktokLiveConnections != undefined) {
+      await this.liveService.stopLiveSession(
+        idUserLive,
+        sessionId,
+        new Date(Date.now()),
+      );
+      this.tiktokLiveConnections.disconnect();
       this.server.disconnectSockets(userId);
+
+      return {
+        message: 'Stop live success',
+      };
+    } else {
+      return {
+        message:
+          'There anre no live on this user, please check the idUserLive and SessionId',
+      };
     }
-    return;
   }
 }

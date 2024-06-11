@@ -19,8 +19,6 @@ export class Bill {
   nickname: string;
   @Prop({ default: Date.now })
   createdTime: string;
-  @Prop({ default: 1 })
-  printCount: number;
 }
 
 @Schema()
