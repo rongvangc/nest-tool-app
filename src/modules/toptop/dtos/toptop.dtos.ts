@@ -2,5 +2,11 @@ import { IsString } from 'class-validator';
 
 export class ToptopDto {
   @IsString()
-  idLiveUser: string;
+  idUserLive: string;
+}
+export class StopLiveDto {
+  @IsString()
+  idUserLive: string;
+  @IsString()
+  sessionId: string;
 }
