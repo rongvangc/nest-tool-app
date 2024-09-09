@@ -1,28 +1,19 @@
-import { Body, Controller, Get } from '@nestjs/common';
+import { Controller, Get } from '@nestjs/common';
 import { UserToken, UserTokenType } from 'src/decorators/user.decorator';
-import { ToptopDto } from '../dtos/toptop.dtos';
 import { ToptopService } from '../services/toptop.service';
+import { ConnectedSocket } from '@nestjs/websockets';
+import { Socket } from 'socket.io';
 
 @Controller('toptop')
 export class ToptopController {
   constructor(private toptopService: ToptopService) {}
 
-  @Get()
+  @Get('start')
   async getLiveComments(
-    @Body() toptopData: ToptopDto,
     @UserToken() user: UserTokenType,
+    @ConnectedSocket() client: Socket,
   ): Promise<void> {
-    return this.toptopService.getLiveComments(user?.id, toptopData?.idLiveUser);
-  }
-
-  @Get()
-  async stopLiveComments(
-    @Body() toptopData: ToptopDto,
-    @UserToken() user: UserTokenType,
-  ): Promise<void> {
-    return this.toptopService.stopLiveComments(
-      user?.id,
-      toptopData?.idLiveUser,
-    );
+    console.log(client.id);
+    // return this.toptopService.getLiveComments(user?.id);
   }
 }

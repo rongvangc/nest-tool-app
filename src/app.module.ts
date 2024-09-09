@@ -12,6 +12,7 @@ import { UserModule } from './modules/users/user.module';
 import { SocketIOModule } from './modules/events/socket-io.module';
 import { ToptopModule } from './modules/toptop/toptop.module';
 import { CommentModule } from './modules/comment/comment.module';
+import { LiveModule } from './modules/live/live.module';
 
 @Module({
   imports: [
@@ -37,6 +38,7 @@ import { CommentModule } from './modules/comment/comment.module';
     SocketIOModule,
     ToptopModule,
     CommentModule,
+    LiveModule,
   ],
   controllers: [AppController],
   providers: [AppService],

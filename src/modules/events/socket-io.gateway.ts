@@ -1,114 +1,122 @@
-import { LiveService } from './../live/live.service';
+import { Inject, forwardRef } from '@nestjs/common';
+import { InjectModel } from '@nestjs/mongoose';
 import {
+  ConnectedSocket,
   MessageBody,
+  OnGatewayConnection,
+  OnGatewayDisconnect,
+  OnGatewayInit,
   SubscribeMessage,
   WebSocketGateway,
   WebSocketServer,
 } from '@nestjs/websockets';
-import { Server } from 'socket.io';
+import { Model } from 'mongoose';
+import { Server, Socket } from 'socket.io';
 import { SocketEvent } from 'src/utils/socketEvent';
 import { WebcastPushConnection } from 'tiktok-live-connector';
-import { Inject, forwardRef } from '@nestjs/common';
+import { User, UserModelDocument } from '../users/models/user.model';
+import { LiveService } from './../live/live.service';
 
 @WebSocketGateway({
   cors: {
     origin: '*',
   },
 })
-export class SocketIOGateway {
+export class SocketIOGateway
+  implements OnGatewayInit, OnGatewayConnection, OnGatewayDisconnect
+{
   constructor(
     @Inject(forwardRef(() => LiveService))
+    @InjectModel(User.name)
+    private userModel: Model<UserModelDocument>,
     private liveService: LiveService,
   ) {}
+
   private tiktokLiveConnections: WebcastPushConnection;
 
-  @WebSocketServer()
-  server: Server;
+  @WebSocketServer() server: Server;
 
-  @SubscribeMessage(SocketEvent.GET_LIVE_TOPTOP_COMMENT)
-  /**
-   * Handles the GET_LIVE_TOPTOP_COMMENT event and emits a socket event
-   * to update the count of new comments on the room. Also connects to the
-   * TikTok live connection and listens for chat messages.
-   *
-   * @param {Object} messageBody - The message body containing userId and idUserLive.
-   * @param {string} messageBody.userId - The user ID.
-   * @param {string} messageBody.idUserLive - The ID of the user's live.
-   * @return {Promise<void>} A promise that resolves when the socket event and connection are established.
-   */
-  async onGetLiveTiktokComments(
-    @MessageBody()
-    { userId, idUserLive },
-  ) {
-    // Emit socket event for update new count on room
-    const socketPromise = this.server
-      .to(userId) // Send the event to the specific user
-      .emit(SocketEvent.GET_LIVE_TOPTOP_COMMENT, async () => {
-        // Connect to the TikTok live connection
-        this.tiktokLiveConnections = new WebcastPushConnection(idUserLive);
-
-        try {
-          this.tiktokLiveConnections
-            .connect()
-            .then((state) => {
-              console.info(`Connected to roomId ${state.roomId}`);
-            })
-            .catch((err) => {
-              console.error('Failed to connect', err);
-            });
-        } catch (err) {
-          // Log error message if connection fails
-          console.error('Failed to connect', err);
-          this.tiktokLiveConnections.disconnect();
-          throw err;
-        }
-        const res = await this.liveService.saveLiveSession(
-          idUserLive,
-          new Date(Date.now()),
-        );
-        console.log(res);
-        // Listen for chat messages
-        this.tiktokLiveConnections.on(
-          'chat',
-          ({
-            comment,
-            userId,
-            nickname,
-            uniqueId,
-            profilePictureUrl,
-            createTime,
-          }) => {
-            // Log the received chat message
-            console.log(
-              `----cmt from ID 🏷: ${idUserLive} - 📨 - ${nickname}-${comment}-${createTime}`,
-            );
-
-            const data = {
-              comment,
-              userId,
-              uniqueId,
-              nickname,
-              profilePictureUrl,
-              createTime,
-            };
-
-            this.server
-              .to(userId) // Send the event to the specific user
-              .emit(SocketEvent.GET_LIVE_TOPTOP_COMMENT, data);
-          },
-        );
-      });
-
-    // Wait for the socket event and connection to be established
-    await Promise.all([socketPromise]);
+  afterInit() {
+    console.log('Initialized');
   }
 
-  async disconnectGetLiveTiktok({ userId, idUserLive }) {
-    const tiktokLiveConnection = this.tiktokLiveConnections[idUserLive];
-    if (tiktokLiveConnection) {
-      tiktokLiveConnection.disconnect();
-      this.server.disconnectSockets(userId);
-    }
-    return;
+  handleConnection(@ConnectedSocket() client: Socket) {
+    const { sockets } = this.server.sockets;
+
+    console.log(`Client id: ${client.id} connected`);
+    console.log(`Number of connected clients: ${sockets.size}`);
+  }
+
+  handleDisconnect(@ConnectedSocket() client: Socket) {
+    console.log(`Cliend id:${client.id} disconnected`);
+  }
+
+  @SubscribeMessage(SocketEvent.START_LIVE)
+  async handleJoinRoom(
+    @ConnectedSocket() client: Socket,
+    @MessageBody() { tiktokLiveID, userClerkId },
+  ) {
+    client.join(userClerkId);
+
+    this.tiktokLiveConnections = new WebcastPushConnection(tiktokLiveID, {
+      processInitialData: false,
+      enableExtendedGiftInfo: true,
+      enableWebsocketUpgrade: true,
+      requestPollingIntervalMs: 2000,
+      clientParams: {},
+      requestOptions: {
+        timeout: 10000,
+      },
+      websocketOptions: {
+        timeout: 10000,
+      },
+      signProviderOptions: {
+        host: 'https://tiktok-sign.toandev.space/',
+      },
+    });
+
+    this.tiktokLiveConnections
+      .connect()
+      .then((state) => {
+        console.info(`Connected to roomId ${state.roomId}`);
+
+        this.liveService.saveLiveSession(userClerkId, new Date(Date.now()));
+      })
+      .catch((err) => {
+        console.error('Failed to connect', err);
+        this.server.to(userClerkId).emit(SocketEvent.STOP_LIVE, true);
+        this.tiktokLiveConnections.disconnect();
+      });
+
+    this.tiktokLiveConnections.on(
+      'chat',
+      ({
+        comment,
+        userId,
+        nickname,
+        uniqueId,
+        profilePictureUrl,
+        createTime,
+      }) => {
+        // Log the received chat message
+        console.log(`----cmt from ID - ${nickname}-${comment}-${createTime}`);
+
+        const data = {
+          comment,
+          userId,
+          uniqueId,
+          nickname,
+          profilePictureUrl,
+          createTime,
+        };
+
+        this.server.to(userClerkId).emit(SocketEvent.SEND_COMMENT, data);
+      },
+    );
+  }
+
+  @SubscribeMessage(SocketEvent.STOP_LIVE)
+  handleStopLive() {
+    this.tiktokLiveConnections.disconnect();
   }
 }

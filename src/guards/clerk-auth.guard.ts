@@ -32,14 +32,16 @@ export class ClerkAuth implements CanActivate {
     }
 
     try {
-      const payload = await clerkClient.verifyToken(token);
+      const payload = await clerkClient.verifyToken(token, {
+        secretKey: process.env.CLERK_SECRET_KEY,
+        clockSkewInMs: 10000,
+      });
 
       console.log('------payload', payload);
-
       // 💡 We're assigning the payload to the request object here
       // so that we can access it in our route handlers
       request['user'] = payload;
-    } catch {
+    } catch (error) {
       throw new UnauthorizedException();
     }
 
