@@ -37,7 +37,7 @@ export class SocketIOGateway
   @WebSocketServer() server: Server;
 
   afterInit() {
-    console.log('Initialized');
+    console.log('Initialized Socket');
   }
 
   handleConnection(@ConnectedSocket() client: Socket) {
