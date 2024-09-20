@@ -1,4 +1,4 @@
-import { clerkClient, User } from '@clerk/clerk-sdk-node';
+import { ClerkClient, User } from '@clerk/clerk-sdk-node';
 import {
   createParamDecorator,
   ExecutionContext,
@@ -17,12 +17,14 @@ export const UserToken = createParamDecorator(
     }
 
     const user = request['user'];
+    const clerkClient: ClerkClient = request['clerk'];
 
     try {
       const userInfo = await clerkClient.users.getUser(user?.sub);
 
       return userInfo;
     } catch (error) {
+      console.error('[Clerk Error: getUserInfo]', error);
       throw new UnauthorizedException(error ?? 'Invalid token');
     }
   },

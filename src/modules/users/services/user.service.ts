@@ -1,21 +1,24 @@
-import { SignInToken, clerkClient } from '@clerk/clerk-sdk-node';
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { ApiResponse, GeneralStatus } from 'src/common/types';
-import { User, UserModelDocument } from '../models/user.model';
+import { ClerkConfigService } from 'src/modules/clerk/services/clerk.service';
 import {
   GetUserResponse,
   UpdateTiktokIDResponse,
 } from '../interfaces/user.interface';
+import { User, UserModelDocument } from '../models/user.model';
 @Injectable()
 export class UserService {
   constructor(
     @InjectModel(User.name) private userModel: Model<UserModelDocument>,
+    private clerkConfigService: ClerkConfigService,
   ) {}
 
   async getCurrentUser(id: string): Promise<ApiResponse<GetUserResponse>> {
-    const userList = await clerkClient.users.getUser(id);
+    const userList = await this.clerkConfigService
+      .getClerkClient()
+      .users.getUser(id);
 
     const existingUser = await this.userModel
       .findOne({ clerkUserId: id })
@@ -40,17 +43,6 @@ export class UserService {
         primaryWeb3Wallet: userList.primaryWeb3Wallet,
         fullName: userList.fullName,
       },
-    };
-  }
-
-  async getClerkToken({ userId }): Promise<ApiResponse<SignInToken>> {
-    const token = await clerkClient.signInTokens.createSignInToken({
-      userId,
-      expiresInSeconds: 60 * 60 * 24 * 30,
-    });
-
-    return {
-      data: token,
     };
   }
 
