@@ -44,8 +44,6 @@ export class ClerkAuth implements CanActivate {
         clockSkewInMs: 10000,
       });
 
-      console.log('------payload', payload);
-
       // 💡 We're assigning the payload to the request object here
       // so that we can access it in our route handlers
       request['user'] = payload;

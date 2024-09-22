@@ -19,7 +19,7 @@ export class AppService implements OnModuleInit {
       CacheAppKey.VAULT_CONFIG,
       async () => await this.vaultConfigService.readSecrets(),
     );
-    console.log('[SECRETS FROM VAULT]:', secrets);
+    // console.log('[SECRETS FROM VAULT]:', secrets);
   }
 
   getHello(): string {
