@@ -19,9 +19,27 @@ import { UserModule } from './modules/users/user.module';
 import { VaultSecretNames } from './modules/vault/interfaces/vault.interface';
 import { VaultConfigService } from './modules/vault/services/vault.service';
 import { VaultConfigModule } from './modules/vault/vault.module';
+import { LoggerModule } from 'nestjs-pino';
+import { single } from 'rxjs';
 
 @Module({
   imports: [
+    LoggerModule.forRoot({
+      pinoHttp: {
+        customProps: (req, res) => ({
+          context: 'HTTP',
+        }),
+        transport: {
+          target: 'pino-pretty',
+          options: {
+            colorize: true,
+            translateTime: 'SYS:standard',
+            ignore: 'pid,hostname',
+            singleLine: true,
+          },
+        },
+      },
+    }),
     ConfigModule.forRoot({
       isGlobal: true,
       load: [configuration],

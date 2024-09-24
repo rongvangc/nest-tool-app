@@ -6,9 +6,10 @@ import { ClerkAuth } from './guards/clerk-auth.guard';
 import { ConfigService } from '@nestjs/config';
 import { CloudConfigService } from './configs/cloud-config.service';
 import { ClerkConfigService } from './modules/clerk/services/clerk.service';
+import { Logger, LoggerErrorInterceptor } from 'nestjs-pino';
 
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule);
+  const app = await NestFactory.create(AppModule, { bufferLogs: true });
 
   const configService = app.get(ConfigService);
   const cloudConfigService = app.get(CloudConfigService);
@@ -17,8 +18,9 @@ async function bootstrap() {
 
   const reflector = app.get(Reflector);
 
+  app.useLogger(app.get(Logger));
+  app.useGlobalInterceptors(new LoggerErrorInterceptor());
   app.enableCors();
-
   app.useGlobalGuards(
     new ClerkAuth(reflector, cloudConfigService, clerkConfigService),
   );
