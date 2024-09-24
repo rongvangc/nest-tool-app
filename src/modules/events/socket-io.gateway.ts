@@ -25,6 +25,9 @@ import { LiveService } from './../live/live.service';
 export class SocketIOGateway
   implements OnGatewayInit, OnGatewayConnection, OnGatewayDisconnect
 {
+  private commentsBuffer: any[] = [];
+  private timeoutId: any;
+
   constructor(
     @Inject(forwardRef(() => LiveService))
     @InjectModel(User.name)
@@ -75,20 +78,19 @@ export class SocketIOGateway
       },
     });
 
-    this.tiktokLiveConnections
+    this.tiktokLiveConnections[userClerkId]
       .connect()
       .then((state) => {
         console.info(`Connected to roomId ${state.roomId}`);
-
         this.liveService.saveLiveSession(userClerkId, new Date(Date.now()));
       })
       .catch((err) => {
         console.error('Failed to connect', err);
         this.server.to(userClerkId).emit(SocketEvent.STOP_LIVE, true);
-        this.tiktokLiveConnections.disconnect();
+        delete this.tiktokLiveConnections[userClerkId]; // Xóa kết nối cũ
       });
 
-    this.tiktokLiveConnections.on(
+    this.tiktokLiveConnections[userClerkId].on(
       'chat',
       ({
         comment,
@@ -99,7 +101,7 @@ export class SocketIOGateway
         createTime,
       }) => {
         // Log the received chat message
-        console.log(`----cmt from ID - ${nickname}-${comment}-${createTime}`);
+        // console.log(`----cmt from ID - ${nickname}-${comment}-${createTime}`);
 
         const data = {
           comment,
@@ -110,13 +112,37 @@ export class SocketIOGateway
           createTime,
         };
 
-        this.server.to(userClerkId).emit(SocketEvent.SEND_COMMENT, data);
+        this.commentsBuffer.unshift(data);
+
+        if (this.commentsBuffer.length >= 20) {
+          // Sent all message
+          this.server
+            .to(userClerkId)
+            .emit(SocketEvent.SEND_COMMENT, this.commentsBuffer);
+          // Reset buffer after sent
+          this.commentsBuffer = [];
+          clearTimeout(this.timeoutId); // clear timeout
+        } else {
+          // Auto send after 1s
+          clearTimeout(this.timeoutId); // Clear timeout if it exited
+          this.timeoutId = setTimeout(() => {
+            if (this.commentsBuffer.length > 0) {
+              this.server
+                .to(userClerkId)
+                .emit(SocketEvent.SEND_COMMENT, this.commentsBuffer);
+              this.commentsBuffer = []; // Reset buffer after sent
+            }
+          }, 1000);
+        }
       },
     );
   }
 
   @SubscribeMessage(SocketEvent.STOP_LIVE)
-  handleStopLive() {
-    this.tiktokLiveConnections.disconnect();
+  handleStopLive(@MessageBody() userClerkId: string) {
+    if (this.tiktokLiveConnections[userClerkId]) {
+      this.tiktokLiveConnections[userClerkId].disconnect();
+      delete this.tiktokLiveConnections[userClerkId]; // Delete section
+    }
   }
 }
